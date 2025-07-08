@@ -12,5 +12,5 @@ def setup_logging():
     )
     logger = logging.getLogger(__name__)
     # Ensure logs are flushed immediately
-    logger.handlers[0].flush = sys.stdout.flush
+    #logger.handlers[0].flush = sys.stdout.flush
     return logger
