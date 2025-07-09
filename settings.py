@@ -25,3 +25,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 logger.info(f"Logging initialized with level {LOG_LEVEL}")
+
+# Read keys from settings
+FMP_API = os.getenv("FMP_API")
