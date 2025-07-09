@@ -1,28 +1,24 @@
-import time
-from settings import logger
-import logfire
+import asyncio
+from models.company import Company
+from models.income_statement import create_public_income_statement
 
 
-@logfire.instrument("Function Instrumented 1")
-def instrumented_function():
-    time.sleep(1)
-    logger.info("Instrumented function called")
+async def main():
+    # Create Company instance for Google
+    company = Company(
+        name="Alphabet Inc.",
+        is_public=True,
+        industry="518210",  # Example NAICS code for internet publishing
+        symbol="GOOG",
+        stock_market="NASDAQ"
+    )
+
+    # Fetch income statement and instantiate the class
+    public_income_stmt = await create_public_income_statement(company)
+
+    # Output JSON
+    print(public_income_stmt.to_json())
 
 
-def main():
-    while True:
-        with logfire.span("First span"):
-            logger.info('Starting example')
-            logger.warning('This is an example message')
-
-        with logfire.span("Second span"):
-            logger.error('This is an example message')
-            logger.debug('This is an example message')
-            logger.critical('This is an example message')
-
-        instrumented_function()
-        time.sleep(5)
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    asyncio.run(main())
