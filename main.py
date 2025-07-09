@@ -1,5 +1,5 @@
 import logging
-from financial_analyzer.handlers.income_handler import handle_private_income_statement
+from handlers.income_handler import handle_private_income_statement
 
 # Configure logging
 logging.basicConfig(

@@ -1,6 +1,6 @@
 import click
-from financial_analyzer.logging_config import setup_logging
-from financial_analyzer.main import process_selection
+from logging_config import setup_logging
+from main import process_selection
 
 logger = setup_logging()
 

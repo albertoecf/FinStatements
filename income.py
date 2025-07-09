@@ -1,5 +1,4 @@
-import logging
-from financial_analyzer.logging_config import setup_logging
+from logging_config import setup_logging
 import json
 
 logger = setup_logging()
@@ -110,7 +109,6 @@ class IncomeStatement:
             self.net_income = self.ebt - self.taxes
             logger.info(f"Net income calculated: {self.net_income}")
 
-
     def to_dict(self):
         """
         Return a dictionary representation of all income statement properties and their values.
@@ -151,3 +149,21 @@ class IncomeStatement:
             raise
 
 
+if __name__ == "__main__":
+    income = IncomeStatement()
+
+    income.revenue = float(input("Enter revenue: ") or 100000)
+    income.cogs = float(input("Enter COGS: ") or 40000)
+    income.operating_expenses = float(input("Enter operating expenses: ") or 20000)
+    income.D_and_A = float(input("Enter depreciation and amortization: ") or 5000)
+    income.interest_expenses = float(input("Enter interest expenses: ") or 3000)
+    income.taxes = float(input("Enter taxes: ") or 8000)
+
+    income.calculate_gross_profit()
+    income.calculate_ebitda()
+    income.calculate_ebit()
+    income.calculate_ebt()
+    income.calculate_net_income()
+
+    print("\n=== Income Statement Summary ===")
+    print(income.to_json())

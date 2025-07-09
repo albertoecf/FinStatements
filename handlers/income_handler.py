@@ -1,4 +1,4 @@
-from financial_analyzer.income import IncomeStatement
+from income import IncomeStatement
 import logging
 
 logger = logging.getLogger(__name__)

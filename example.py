@@ -1,16 +1,6 @@
-import logging
-import logfire
 import time
-
-logfire.configure(send_to_logfire="if-token-present")
-logfire.instrument_system_metrics()
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    handlers=[logging.FileHandler('financial_analyzer.log'),
-                              logfire.LogfireLoggingHandler()]
-                    )
-logger = logging.getLogger(__name__)
+from settings import logger
+import logfire
 
 
 @logfire.instrument("Function Instrumented 1")

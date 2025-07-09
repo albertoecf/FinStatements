@@ -1,3 +1,4 @@
+import logfire
 import logging
 import sys
 
@@ -11,6 +12,4 @@ def setup_logging():
         force=True
     )
     logger = logging.getLogger(__name__)
-    # Ensure logs are flushed immediately
-    #logger.handlers[0].flush = sys.stdout.flush
     return logger
