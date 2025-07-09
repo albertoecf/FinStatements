@@ -35,5 +35,18 @@ class FMPFetcher:
 
         return data[0]  # Return latest income statement dict
 
+    async def fetch_company_profile(self, symbol: str) -> dict:
+        url = f"{self.BASE_URL}/profile/{symbol}"
+        params = {"apikey": self.api_key}
+
+        response = await self.client.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        if not data:
+            raise ValueError(f"No profile data found for symbol {symbol}")
+
+        return data[0]
+
     async def close(self):
         await self.client.aclose()

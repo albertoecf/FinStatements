@@ -1,7 +1,7 @@
 import json
 import settings
 from models.company import Company
-from data_fetchers.income_statement_fetcher import FMPFetcher
+
 
 
 class IncomeStatement:
@@ -186,32 +186,3 @@ class PublicIncomeStatement(IncomeStatement):
         self.ebt = income_data.get("ebt")
         self.taxes = income_data.get("incomeTaxExpense")
         self.net_income = income_data.get("netIncome")
-
-
-async def create_public_income_statement(company: Company):
-    fetcher = FMPFetcher(api_key=settings.FMP_API)
-    try:
-        income_data = await fetcher.fetch_income_statement(company.symbol)
-        return PublicIncomeStatement(company, income_data)
-    finally:
-        await fetcher.close()
-
-
-if __name__ == "__main__":
-    income = IncomeStatement()
-
-    income.revenue = float(input("Enter revenue: ") or 100000)
-    income.cogs = float(input("Enter COGS: ") or 40000)
-    income.operating_expenses = float(input("Enter operating expenses: ") or 20000)
-    income.D_and_A = float(input("Enter depreciation and amortization: ") or 5000)
-    income.interest_expenses = float(input("Enter interest expenses: ") or 3000)
-    income.taxes = float(input("Enter taxes: ") or 8000)
-
-    income.calculate_gross_profit()
-    income.calculate_ebitda()
-    income.calculate_ebit()
-    income.calculate_ebt()
-    income.calculate_net_income()
-
-    print("\n=== Income Statement Summary ===")
-    print(income.to_json())
