@@ -1,6 +1,7 @@
 import httpx
 
 
+
 class FMPFetcher:
     def __init__(self, api_key: str):
         if not api_key:
@@ -47,6 +48,32 @@ class FMPFetcher:
             raise ValueError(f"No profile data found for symbol {symbol}")
 
         return data[0]
+
+    async def close(self):
+        await self.client.aclose()
+
+    async def fetch_cash_flow_statement(self, symbol: str, limit: int = 5):
+        """
+        Fetch cash flow statement data for a given company symbol asynchronously.
+
+        Args:
+            symbol (str): Ticker symbol (e.g. AAPL, TSLA, 7203.T)
+            limit (int): Number of periods to fetch (default: 5 latest)
+
+        Returns:
+            list: List of cash flow statement dictionaries
+
+        Raises:
+            httpx.HTTPStatusError: if API call fails
+        """
+        url = f"{self.BASE_URL}/cash-flow-statement/{symbol}"
+        params = {"limit": limit, "apikey": self.api_key}
+        response = await self.client.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        if not data:
+            raise ValueError(f"No cash flow statement data found for symbol {symbol}")
+        return data
 
     async def close(self):
         await self.client.aclose()
