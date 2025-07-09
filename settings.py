@@ -1,0 +1,27 @@
+import os
+import logging
+import logfire
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get environment variables
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
+# Configure Logfire: send only if token is present
+logfire.configure(send_to_logfire="if-token-present")
+logfire.instrument_system_metrics()
+
+# Set up logging with dynamic level
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("financial_analyzer.log"),
+        logfire.LogfireLoggingHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+logger.info(f"Logging initialized with level {LOG_LEVEL}")
