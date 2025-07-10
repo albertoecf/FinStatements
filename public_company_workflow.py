@@ -57,9 +57,7 @@ async def fetch_cash_flow_projections(symbol: str, years: int = 5):
         await fetcher.close()
 
 
-async def run_workflow():
-    symbol = input("Enter company symbol (default GOOG): ").strip().upper() or "GOOG"
-
+async def run_workflow(symbol: str):
     company = Company(
         name=symbol,
         is_public=True,
@@ -104,9 +102,8 @@ async def run_workflow():
         market_cap = 20
         settings.logger.error(f"Failed to fetch data for {symbol}: {e}")
 
-
-    settings.logger.info(f"DCF Valuation for {symbol}: ${float(dcf_model.enterprise_value/1000000):,.2f}")
-    settings.logger.info(f"Current Market Cap for {symbol}: ${float(market_cap/1000000):,.2f}")
+    settings.logger.info(f"DCF Valuation for {symbol}: ${float(dcf_model.enterprise_value / 1000000):,.2f}")
+    settings.logger.info(f"Current Market Cap for {symbol}: ${float(market_cap / 1000000):,.2f}")
 
     if dcf_model.enterprise_value > market_cap:
         print(f'Your DCF valuation is higher than market price. {symbol} may be undervalued')
@@ -114,5 +111,10 @@ async def run_workflow():
         print(f'Your DCF valuation is lower than market price. {symbol} may be overvalued or fairly valued.')
 
 
+async def run_multiple_workflows(symbols: list[str]):
+    tasks = [run_workflow(symbol) for symbol in symbols]
+    await asyncio.gather(*tasks)
+
+
 if __name__ == "__main__":
-    asyncio.run(run_workflow())
+    asyncio.run(run_multiple_workflows(settings.symbols))
