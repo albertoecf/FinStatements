@@ -5,6 +5,8 @@ from data_fetchers.FMPFetcher import FMPFetcher
 from models.income_statement import PublicIncomeStatement
 from models.discounted_cash_flow import DiscountedCashFlow, CashFlowProjection
 from utils import forecast_fcf
+import logfire
+import pandas as pd
 
 
 async def create_public_income_statement(company: Company):
@@ -51,7 +53,7 @@ async def fetch_cash_flow_projections(symbol: str, years: int = 5):
                 CashFlowProjection(year=year, free_cash_flow=fcf)
             )
         forecasted_cash_flow = forecast_fcf(projections)
-        settings.logger.info(f'Projections{projections}, forecasted_cash_flow: {forecasted_cash_flow}')
+        # settings.logger.info(f'Projections{projections}, forecasted_cash_flow: {forecasted_cash_flow}')
         return forecasted_cash_flow
     finally:
         await fetcher.close()
@@ -90,9 +92,9 @@ async def run_workflow(symbol: str):
         return
 
     # Log outputs
-    settings.logger.info(f"Company info: {company.json()}")
-    settings.logger.info(f"Income Statement JSON for {symbol}:\n{income_statement.to_json()}")
-    settings.logger.info(f"DCF Valuation for {symbol}: {dcf_model.enterprise_value:.2f}")
+    # settings.logger.info(f"Company info: {company.json()}")
+    # settings.logger.info(f"Income Statement JSON for {symbol}:\n{income_statement.to_json()}")
+    # settings.logger.info(f"DCF Valuation for {symbol}: {dcf_model.enterprise_value:.2f}")
 
     try:
         fetcher = FMPFetcher(api_key=settings.FMP_API)
@@ -102,19 +104,39 @@ async def run_workflow(symbol: str):
         market_cap = 20
         settings.logger.error(f"Failed to fetch data for {symbol}: {e}")
 
-    settings.logger.info(f"DCF Valuation for {symbol}: ${float(dcf_model.enterprise_value / 1000000):,.2f}")
-    settings.logger.info(f"Current Market Cap for {symbol}: ${float(market_cap / 1000000):,.2f}")
+    with logfire.span(f'Valuation info for {symbol}'):
+        settings.logger.info(f"DCF Valuation for {symbol}: ${float(dcf_model.enterprise_value / 1000000):,.2f}")
+        settings.logger.info(f"Current Market Cap for {symbol}: ${float(market_cap / 1000000):,.2f}")
+        if dcf_model.enterprise_value > market_cap:
+            settings.logger.info(f'Your DCF valuation is higher than market price. {symbol} may be undervalued')
+        else:
+            settings.logger.info(
+                f'Your DCF valuation is lower than market price. {symbol} may be overvalued or fairly valued.')
 
-    if dcf_model.enterprise_value > market_cap:
-        print(f'Your DCF valuation is higher than market price. {symbol} may be undervalued')
-    else:
-        print(f'Your DCF valuation is lower than market price. {symbol} may be overvalued or fairly valued.')
+    # Build comparison DataFrame
+    valuation_status = "undervalued" if dcf_model.enterprise_value > market_cap else "overvalued or fairly valued"
+    comparison_df = pd.DataFrame([{
+        "company": symbol,
+        "enterprise_value_million": dcf_model.enterprise_value / 1_000_000,
+        "market_cap_million": market_cap / 1_000_000,
+        "valuation_status": valuation_status
+    }])
+
+    return comparison_df
 
 
 async def run_multiple_workflows(symbols: list[str]):
     tasks = [run_workflow(symbol) for symbol in symbols]
-    await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
+    # Each result is a DataFrame (single row). Combine into one DataFrame.
+    combined_df = pd.concat(results, ignore_index=True)
+
+    # Optional: log or save the final aggregated DataFrame
+    settings.logger.info("Combined Valuation DataFrame:\n%s", combined_df.to_string(index=False))
+
+    return combined_df
 
 
 if __name__ == "__main__":
-    asyncio.run(run_multiple_workflows(settings.symbols))
+    final_df = asyncio.run(run_multiple_workflows(settings.symbols))
+    print(final_df)

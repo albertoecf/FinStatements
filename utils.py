@@ -22,6 +22,9 @@ def forecast_fcf(projections: List[CashFlowProjection], forecast_years: int = 5)
     # Calculate year-over-year growth rate
     df["growth"] = df["fcf"].pct_change()
 
+    # Calculate FCF in millions of USD
+    df["fcf_million_usd"] = df["fcf"] / 1_000_000
+
     # Calculate average growth rate (excluding first NaN)
     avg_growth = df["growth"][1:].mean()
 
@@ -34,15 +37,21 @@ def forecast_fcf(projections: List[CashFlowProjection], forecast_years: int = 5)
     for i in range(1, forecast_years + 1):
         next_year = last_year + i
         next_fcf = last_fcf * (1 + avg_growth)
-        forecast_rows.append({"year": next_year, "fcf": next_fcf, "growth": avg_growth})
+        forecast_rows.append({
+            "year": next_year,
+            "fcf": next_fcf,
+            "growth": avg_growth,
+            "fcf_million_usd": next_fcf / 1_000_000
+        })
         last_fcf = next_fcf  # update base for next iteration
 
     # Append forecast rows to df
     forecast_df = pd.DataFrame(forecast_rows)
     df_final = pd.concat([df, forecast_df], ignore_index=True)
 
+    # todo: Should we include the company name?
     # Log the final DataFrame
-    settings.logger.info("Forecast FCF DataFrame:\n%s", df_final.to_string(index=False))
+    # settings.logger.info("Forecast FCF DataFrame:\n%s", df_final.to_string(index=False))
 
     # Convert forecast rows to CashFlowProjection objects
     forecast = [
