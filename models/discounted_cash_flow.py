@@ -30,6 +30,9 @@ class DiscountedCashFlow(BaseModel):
             raise ValueError("No cash flow projections provided.")
 
         last_fcf = self.projections[-1].free_cash_flow
+        # The discount rate must always be greater than the terminal growth rate.
+        if self.discount_rate < self.terminal_growth_rate:
+            raise ValueError("Discount rate must be greater than terminal growth rate.")
         self.terminal_value = (last_fcf * (1 + self.terminal_growth_rate)) / (
                     self.discount_rate - self.terminal_growth_rate)
 
@@ -37,9 +40,6 @@ class DiscountedCashFlow(BaseModel):
         """
         Calculate total enterprise value as sum of discounted cash flows plus discounted terminal value.
         """
-        if not self.projections:
-            raise ValueError("No cash flow projections provided.")
-
         discounted_sum = 0
         for i, proj in enumerate(self.projections, start=1):
             discounted = proj.free_cash_flow / ((1 + self.discount_rate) ** i)

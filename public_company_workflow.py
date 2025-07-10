@@ -7,6 +7,7 @@ from models.discounted_cash_flow import DiscountedCashFlow, CashFlowProjection
 
 
 async def create_public_income_statement(company: Company):
+    """Instantiate a PublicIncomeStatement for a given Company fetching data using specific fetcher"""
     fetcher = FMPFetcher(api_key=settings.FMP_API)
     try:
         income_data = await fetcher.fetch_income_statement(company.symbol)
@@ -16,6 +17,7 @@ async def create_public_income_statement(company: Company):
 
 
 async def enrich_company_profile(company: Company) -> Company:
+    """Given a company symbol we will fetch metadata such as sector, industry and beta"""
     if not company.symbol:
         raise ValueError("Company symbol required for profile enrichment")
 
@@ -111,3 +113,4 @@ async def run_workflow():
 
 if __name__ == "__main__":
     asyncio.run(run_workflow())
+
