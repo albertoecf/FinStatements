@@ -4,6 +4,7 @@ from models.company import Company, StockMarket
 from data_fetchers.FMPFetcher import FMPFetcher
 from models.income_statement import PublicIncomeStatement
 from models.discounted_cash_flow import DiscountedCashFlow, CashFlowProjection
+from utils import forecast_fcf
 
 
 async def create_public_income_statement(company: Company):
@@ -49,7 +50,9 @@ async def fetch_cash_flow_projections(symbol: str, years: int = 5):
             projections.append(
                 CashFlowProjection(year=year, free_cash_flow=fcf)
             )
-        return projections
+        forecasted_cash_flow = forecast_fcf(projections)
+        settings.logger.info(f'Projections{projections}, forecasted_cash_flow: {forecasted_cash_flow}')
+        return forecasted_cash_flow
     finally:
         await fetcher.close()
 
@@ -93,24 +96,23 @@ async def run_workflow():
     settings.logger.info(f"Income Statement JSON for {symbol}:\n{income_statement.to_json()}")
     settings.logger.info(f"DCF Valuation for {symbol}: {dcf_model.enterprise_value:.2f}")
 
-
     try:
         fetcher = FMPFetcher(api_key=settings.FMP_API)
-        profile_data = await fetcher.fetch_company_profile("GOOG")
+        profile_data = await fetcher.fetch_company_profile(symbol)
         market_cap = profile_data.get("mktCap")
     except Exception as e:
         market_cap = 20
         settings.logger.error(f"Failed to fetch data for {symbol}: {e}")
 
-    settings.logger.info(f"DCF Valuation for GOOG: ${dcf_model.enterprise_value:,.2f}")
-    settings.logger.info(f"Current Market Cap for GOOG: ${market_cap:,.2f}")
+
+    settings.logger.info(f"DCF Valuation for {symbol}: ${float(dcf_model.enterprise_value/1000000):,.2f}")
+    settings.logger.info(f"Current Market Cap for {symbol}: ${float(market_cap/1000000):,.2f}")
 
     if dcf_model.enterprise_value > market_cap:
-        print("Your DCF valuation is higher than market price. GOOG may be undervalued.")
+        print(f'Your DCF valuation is higher than market price. {symbol} may be undervalued')
     else:
-        print("Your DCF valuation is lower than market price. GOOG may be overvalued or fairly valued.")
+        print(f'Your DCF valuation is lower than market price. {symbol} may be overvalued or fairly valued.')
 
 
 if __name__ == "__main__":
     asyncio.run(run_workflow())
-
