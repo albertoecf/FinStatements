@@ -18,9 +18,12 @@ financial_env\Scripts\activate
 ## Features
 
 Fetching any report for any public company
-report_workflow.py accepts ticker and report type as inputs. Returns the last report presented. 
+report_workflow.py accepts ticker and report type as inputs. Returns the last report presented.
 
-Potential improvements: 
+Potential improvements:
+
 * Returns multiple report_dates
 * Return multiple report_type in the same call
-* 
+
+* tc_comparison.py receives a list of tickers and returns a pd df with tc stats. (It fetches data from k-10 in the sec
+  edgar, process it, and returns a df)

@@ -469,6 +469,73 @@ def process_one_statement(ticker, accession_number, statement_name):
             return None
 
 
+
+def fetch_report_to_df(ticker: str, report_type: str) -> pd.DataFrame:
+    """Given a ticker and valid report type, this function returns the report for the latest period"""
+    ticker = ticker.upper()
+    report_type = report_type.lower()
+
+    valid_report_types = ["balance_sheet", "income_statement", "cash_flow_statement"]
+    if report_type not in valid_report_types:
+        raise ValueError(f"{report_type} is not a valid report type")
+
+    try:
+        acc = get_filtered_filings(ticker, form_type="10-Q", just_accession_numbers=True)
+        acc_num = acc.iloc[0].replace('-', '')
+    except IndexError:
+        raise ValueError(f"There was a problem getting filings for {ticker}")
+
+    try:
+        statement = process_one_statement(ticker, acc_num, report_type)
+    except ValueError:
+        print("stop program")
+        raise ValueError(f"There was a problem getting filings for {ticker}")
+
+    label_dict = get_label_dictionary(ticker, headers)
+    statement_df = rename_statement(statement, label_dict)
+    #settings.logger.debug("statement_df: {}".format(statement_df))
+    return statement_df
+
+
+def extract_tax_rate(df_: pd.DataFrame) -> float:
+    ebt_ = df_.loc['Income (Loss) from Continuing Operations before Income Taxes, Noncontrolling Interest']
+    tax_expense_ = df_.loc['Income Tax Expense (Benefit)']
+    tx_raw_ = (tax_expense_ / ebt_)
+    tc_ = tx_raw_.apply(lambda x: max(0, x))
+    return tc_
+
+def convert_and_group(data_list):
+    # Initialize empty list to collect records
+    records = []
+
+    # Loop through each dictionary in the input list
+    for entry in data_list:
+        ticker = entry['ticker']
+        tc_series = entry['tc']
+
+        # Convert each series to dataframe and reset index for date-value structure
+        df = tc_series.reset_index()
+        df.columns = ['date', 'value']
+        df['ticker'] = ticker
+
+        # Append to records
+        records.append(df)
+
+    # Concatenate all records into one dataframe
+    final_df = pd.concat(records, ignore_index=True)
+
+    # Reorder columns
+    final_df = final_df[['ticker', 'date', 'value']]
+    # Group by ticker and calculate average
+    grouped_df = final_df.groupby('ticker')['value'].mean().reset_index()
+
+    return final_df, grouped_df
+
+
+
+
+
+
 def workflow(symbol):
     ticker = symbol.upper()
     filings = get_filtered_filings(ticker, form_type='10-K')
