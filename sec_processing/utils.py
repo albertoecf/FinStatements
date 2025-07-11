@@ -164,9 +164,13 @@ def get_label_dictionary(ticker, headers):
 
 def rename_statement(statement, label_dictionary):
     # Extract the part after the first "_" and then map it using the label dictionary
-    statement.index = statement.index.map(
-        lambda x: label_dictionary.get(x.split("_", 1)[-1], x)
-    )
+    try:
+        statement.index = statement.index.map(
+            lambda x: label_dictionary.get(x.split("_", 1)[-1], x)
+        )
+    except ValueError:
+        raise ValueError("It was not possible to rename the statement")
+
     return statement
 
 
@@ -438,7 +442,7 @@ def process_one_statement(ticker, accession_number, statement_name):
         settings.logger.error(
             f"Failed to get statement soup: {e} for accession number: {accession_number}"
         )
-        return None
+        raise ValueError("Failed to get statement soup for accession number: {}".format(accession_number))
 
     if soup:
         try:
