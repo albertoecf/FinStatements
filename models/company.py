@@ -13,7 +13,7 @@ class StockMarket(str, Enum):
 
 
 class Company(BaseModel):
-    name: str = Field(..., description="Name of the company")
+    name: Optional[str] = Field(..., description="Name of the company")
     is_public: bool = Field(..., description="Indicates if the company is public")
     industry: Optional[str] = None
     sector: Optional[str] = None
