@@ -3,7 +3,7 @@ import settings
 from models.company import Company, StockMarket
 from data_fetchers.FMPFetcher import FMPFetcher
 from models.income_statement import PublicIncomeStatement
-from models.discounted_cash_flow import DiscountedCashFlow, CashFlowProjection
+from models.discounted_cash_flow import DiscountedCashFlow, CashFlowEntry
 from utils import forecast_fcf
 import logfire
 import pandas as pd
@@ -50,7 +50,7 @@ async def fetch_cash_flow_projections(symbol: str, years: int = 5):
             year = int(entry["calendarYear"])
             fcf = entry.get("freeCashFlow") or 0.0
             projections.append(
-                CashFlowProjection(year=year, free_cash_flow=fcf)
+                CashFlowEntry(year=year, free_cash_flow=fcf)
             )
         forecasted_cash_flow = forecast_fcf(projections)
         # settings.logger.info(f'Projections{projections}, forecasted_cash_flow: {forecasted_cash_flow}')
@@ -80,10 +80,12 @@ async def run_workflow(symbol: str):
         # Build and calculate DCF
         dcf_model = DiscountedCashFlow(
             company_name=company.name,
+            # todo update with calculated metrics
             discount_rate=0.08,  # Example WACC 8%
+            # todo update with calculated metrics
             terminal_growth_rate=0.025,  # Example 2.5% terminal growth
-            projections=projections
-        )
+            projections=projections)
+
         dcf_model.calculate_terminal_value()
         dcf_model.calculate_enterprise_value()
 

@@ -1,19 +1,19 @@
-from models.discounted_cash_flow import CashFlowProjection
+from models.discounted_cash_flow import CashFlowEntry
 from typing import List
 import pandas as pd
 import settings
 
 
-def forecast_fcf(projections: List[CashFlowProjection], forecast_years: int = 5) -> List[CashFlowProjection]:
+def forecast_fcf(projections: List[CashFlowEntry], forecast_years: int = 5) -> List[CashFlowEntry]:
     """
     Forecast future free cash flows based on historical growth rate.
 
     Args:
-        projections (List[CashFlowProjection]): Historical FCF data.
+        projections (List[CashFlowEntry]): Historical FCF data.
         forecast_years (int): Number of future years to forecast.
 
     Returns:
-        List[CashFlowProjection]: Historical + forecasted FCF projections.
+        List[CashFlowEntry]: Historical + forecasted FCF projections.
     """
     # Convert to DataFrame
     df = pd.DataFrame([{"year": p.year, "fcf": p.free_cash_flow} for p in projections])
@@ -53,9 +53,9 @@ def forecast_fcf(projections: List[CashFlowProjection], forecast_years: int = 5)
     # Log the final DataFrame
     # settings.logger.info("Forecast FCF DataFrame:\n%s", df_final.to_string(index=False))
 
-    # Convert forecast rows to CashFlowProjection objects
+    # Convert forecast rows to CashFlowEntry objects
     forecast = [
-        CashFlowProjection(year=row["year"], free_cash_flow=row["fcf"])
+        CashFlowEntry(year=row["year"], free_cash_flow=row["fcf"])
         for row in forecast_rows
     ]
 

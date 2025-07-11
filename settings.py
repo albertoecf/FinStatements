@@ -32,3 +32,6 @@ FMP_API = os.getenv("FMP_API")
 
 #Symbols to analyze
 symbols = ["GOOG", "MSFT", "AMZN", "AAPL", "TSLA", "META", "NFLX", "NVDA", "ADBE", "INTC"]
+
+
+email_address = os.getenv("EMAIL_ADDRESS")

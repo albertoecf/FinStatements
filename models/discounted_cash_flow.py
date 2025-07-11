@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 
 
-class CashFlowProjection(BaseModel):
+class CashFlowEntry(BaseModel):
     """
     Represents an individual year's projected free cash flow.
     """
@@ -15,10 +15,11 @@ class DiscountedCashFlow(BaseModel):
     Represents a Discounted Cash Flow (DCF) valuation model.
     """
 
-    company_name: str = Field(..., description="Name of the company being valued")
+    company_symbol: Optional[str] = Field(..., description="Symbol of the company")
+    company_name: Optional[str] = None
     discount_rate: float = Field(..., description="Discount rate used for DCF (e.g. WACC)")
     terminal_growth_rate: float = Field(..., description="Terminal growth rate after projection period")
-    projections: List[CashFlowProjection] = Field(..., description="Projected free cash flows per year")
+    projections: List[CashFlowEntry] = Field(..., description="Projected free cash flows per year")
     terminal_value: Optional[float] = Field(None, description="Calculated terminal value")
     enterprise_value: Optional[float] = Field(None, description="Final enterprise value from DCF calculation")
 
@@ -34,7 +35,7 @@ class DiscountedCashFlow(BaseModel):
         if self.discount_rate < self.terminal_growth_rate:
             raise ValueError("Discount rate must be greater than terminal growth rate.")
         self.terminal_value = (last_fcf * (1 + self.terminal_growth_rate)) / (
-                    self.discount_rate - self.terminal_growth_rate)
+                self.discount_rate - self.terminal_growth_rate)
 
     def calculate_enterprise_value(self):
         """
