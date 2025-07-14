@@ -31,9 +31,9 @@ def get_market_equity_value(ticker):
         print(f"Error fetching market equity value for {ticker}: {e}")
         return None
 
-
-# Example usage
-tickers = ["AAPL", "MSFT", "GOOGL", "TSLA"]
-for ticker in tickers:
-    equity_value = get_market_equity_value(ticker)
-    print(f"{ticker} Market Equity Value: ${equity_value:,.2f}")
+if __name__ == "__main__":
+    # Example usage
+    tickers = ["AAPL", "MSFT", "GOOGL", "TSLA"]
+    for ticker in tickers:
+        equity_value = get_market_equity_value(ticker)
+        print(f"{ticker} Market Equity Value: ${equity_value:,.2f}")

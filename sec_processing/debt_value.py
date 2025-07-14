@@ -41,12 +41,12 @@ def detect_debt_columns(columns, debt_mapping, debt_patterns):
 
     return detected
 
-def main():
-    tickers = ["MSFT", "JNJ", "HD", "GOOGL", "TSLA", "HD", "JNJ"]
+def main(tickers_):
+
     metric_ = "avg_total_debt"
     report_type = "balance_sheet"
 
-    for ticker in tickers:
+    for ticker in tickers_:
         report_df = fetch_report_to_df(ticker, report_type)
         cols = list(report_df.transpose().columns)
 
@@ -88,4 +88,5 @@ def main():
             settings.logger.error(f"Could not find {metric_} in: {report_type} for {ticker} : {e}")
 
 if __name__ == "__main__":
-    main()
+    tickers = ["MSFT", "JNJ", "HD", "GOOGL", "TSLA", "HD", "JNJ"]
+    main(tickers)
