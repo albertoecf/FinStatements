@@ -13,3 +13,7 @@ print(df_forecasted.info())
 df_discounted = discount_fcfs(df_forecasted, wacc)
 npv = calculate_npv_from_discounted(df_discounted)
 print(f"NPV_cash_flow: {npv:,.2f}")
+
+
+# Calculate terminal value
+# add terminal value and fcf
