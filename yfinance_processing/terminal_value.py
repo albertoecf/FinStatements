@@ -34,14 +34,29 @@ if __name__ == "__main__":
     from fetch_fcf import fetch_fcf
     from fcf_forecast import forecast_fcf_interface
     from wacc import calculate_wacc
+    from settings import sp500_tickers
 
     # Example perpetual growth assumption (e.g. 2%)
     g = 0.02
 
-    ticker = "MELI"
-    df = fetch_fcf(ticker)
-    df_forecasted = forecast_fcf_interface(df, method="growth", periods=5, freq="YE")
-    # Calculate terminal value discounted to present
-    wacc = calculate_wacc(ticker)
-    terminal_value = calculate_present_terminal_value(df_forecasted, wacc, g)
-    print(f"Terminal Value (discounted to present): {terminal_value:,.2f}")
+    results = []
+
+    for ticker in sp500_tickers:
+        try:
+            df = fetch_fcf(ticker)
+            df_forecasted = forecast_fcf_interface(df, method="growth", periods=5, freq="YE")
+            wacc = calculate_wacc(ticker)
+            terminal_value = calculate_present_terminal_value(df_forecasted, wacc, g)
+
+            results.append({
+                "ticker": ticker,
+                "terminal_value": terminal_value
+            })
+
+            print(f"{ticker} - Terminal Value (discounted to present): {terminal_value:,.2f}")
+        except:
+            print(f"{ticker} - Terminal Value not found")
+    # Convert results to DataFrame
+    terminal_value_df = pd.DataFrame(results)
+    print("\n=== Terminal Value DataFrame ===")
+    print(terminal_value_df)
